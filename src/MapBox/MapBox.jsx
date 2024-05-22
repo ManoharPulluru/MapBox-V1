@@ -17,7 +17,7 @@ const MapBox = () => {
         container: mapContainer,
         style: 'mapbox://styles/mapbox/streets-v12',
         center: [0, 0],
-        zoom: 19,
+        zoom: 2, // Start with a zoom level that shows a larger area
       });
 
       const geolocate = new mapboxgl.GeolocateControl({
@@ -37,10 +37,12 @@ const MapBox = () => {
       geolocate.on('geolocate', (e) => {
         const userLng = e.coords.longitude;
         const userLat = e.coords.latitude;
-        map.setCenter([userLng, userLat]);
-        map.setZoom(14);
 
-        // Update route line from user's current location to the destination
+        if (!map.getLayer('route')) {
+          map.setCenter([userLng, userLat]);
+          map.setZoom(14);
+        }
+
         const endPoint = [78.38598118932651, 17.44030946921754]; // Destination
         if (routeLayer) {
           updateRoute(map, [userLng, userLat], endPoint);
@@ -84,7 +86,7 @@ const MapBox = () => {
     .then(response => {
       const data = response.body;
       const route = data.routes[0].geometry;
-      const routeLayer = map.addLayer({
+      map.addLayer({
         id: 'route',
         type: 'line',
         source: {
@@ -105,7 +107,7 @@ const MapBox = () => {
           'line-opacity': 0.75,
         },
       });
-      setRouteLayer(routeLayer);
+      setRouteLayer(true);
     })
     .catch(error => {
       console.error('Error fetching directions:', error);
