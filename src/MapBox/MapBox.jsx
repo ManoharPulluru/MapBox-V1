@@ -69,9 +69,49 @@ const MapBox = ({ navigate }) => {
 
   useEffect(() => {
     if (navigate && userLocation && map) {
+      map.flyTo({
+        center: userLocation,
+        zoom: 18,
+        pitch: 60,
+        bearing: 0,
+        speed: 1.2, // Make the flying animation slower or faster
+        curve: 1, // Change the curvature of the flight path
+        essential: true // This animation is considered essential with respect to prefers-reduced-motion
+      });
       addRoute(map, userLocation, destination);
     }
   }, [navigate, userLocation, map]);
+
+  useEffect(() => {
+    if (map && navigate) {
+      const updateLocation = (e) => {
+        const userLng = e.coords.longitude;
+        const userLat = e.coords.latitude;
+        setUserLocation([userLng, userLat]);
+
+        map.flyTo({
+          center: [userLng, userLat],
+          zoom: 18,
+          pitch: 60,
+          bearing: map.getBearing() + 45, // Rotate the map for better visual experience
+          speed: 1.2,
+          curve: 1,
+          essential: true,
+        });
+      };
+
+      const geolocate = map._controls.find(control => control instanceof mapboxgl.GeolocateControl);
+      if (geolocate) {
+        geolocate.on('geolocate', updateLocation);
+      }
+
+      return () => {
+        if (geolocate) {
+          geolocate.off('geolocate', updateLocation);
+        }
+      };
+    }
+  }, [map, navigate]);
 
   const addRoute = (map, start, end) => {
     const directionsClient = directionsPlugin({ accessToken: mapboxgl.accessToken });
@@ -92,28 +132,30 @@ const MapBox = ({ navigate }) => {
     .then(response => {
       const data = response.body;
       const route = data.routes[0].geometry;
-      map.addLayer({
-        id: 'route',
-        type: 'line',
-        source: {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            properties: {},
-            geometry: route,
+      if (!map.getLayer('route')) {
+        map.addLayer({
+          id: 'route',
+          type: 'line',
+          source: {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              properties: {},
+              geometry: route,
+            },
           },
-        },
-        layout: {
-          'line-join': 'round',
-          'line-cap': 'round',
-        },
-        paint: {
-          'line-color': '#3887be',
-          'line-width': 5,
-          'line-opacity': 0.75,
-        },
-      });
-      setRouteLayer(true);
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round',
+          },
+          paint: {
+            'line-color': '#3887be',
+            'line-width': 5,
+            'line-opacity': 0.75,
+          },
+        });
+        setRouteLayer(true);
+      }
     })
     .catch(error => {
       console.error('Error fetching directions:', error);
