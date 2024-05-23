@@ -23,7 +23,6 @@ const MapBox = ({ navigate }) => {
         center: [0, 0],
         zoom: 2,
       });
-
       const geolocate = new mapboxgl.GeolocateControl({
         positionOptions: {
           enableHighAccuracy: true,
