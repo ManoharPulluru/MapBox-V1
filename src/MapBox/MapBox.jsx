@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css';
-import mapboxSdk from '@mapbox/mapbox-sdk';
 import directionsPlugin from '@mapbox/mapbox-sdk/services/directions';
 
 const MapBox = ({ navigate }) => {
@@ -47,12 +46,15 @@ const MapBox = ({ navigate }) => {
           map.setZoom(14);
         }
 
-        if (navigate) {
-          if (routeLayer) {
-            updateRoute(map, [userLng, userLat], destination);
-          } else {
-            addRoute(map, [userLng, userLat], destination);
-          }
+        if (routeLayer) {
+          updateRoute(map, [userLng, userLat], destination);
+        }
+      });
+
+      geolocate.on('userheading', (e) => {
+        const userHeading = e.heading;
+        if (map && navigate) {
+          map.setBearing(userHeading);
         }
       });
 
@@ -72,16 +74,16 @@ const MapBox = ({ navigate }) => {
     if (navigate && userLocation && map) {
       map.flyTo({
         center: userLocation,
-        zoom: 17,
+        zoom: 14,
         pitch: 60, // Adjust the pitch to give a perspective view
-        bearing: 0, // Adjust the bearing to rotate the map
+        bearing: map.getBearing(), // Maintain current bearing
         speed: 1.6, // Make the flying animation slower
         curve: 1, // Adjust the curvature of the fly
         essential: true, // This animation is considered essential with respect to prefers-reduced-motion
       });
       addRoute(map, userLocation, destination);
     }
-  }, [navigate, userLocation, map]);
+  }, [navigate]);
 
   const addRoute = (map, start, end) => {
     const directionsClient = directionsPlugin({ accessToken: mapboxgl.accessToken });
