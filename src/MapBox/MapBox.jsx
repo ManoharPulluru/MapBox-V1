@@ -70,7 +70,7 @@ const MapBox = ({ navigate }) => {
   }, [map]);
 
   useEffect(() => {
-    if (navigate && userLocation && map) {
+    if (navigate && map) {
       map.flyTo({
         center: userLocation,
         zoom: 18,
