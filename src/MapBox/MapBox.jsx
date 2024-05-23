@@ -2,16 +2,18 @@ import React, { useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css';
-import mapboxSdk from '@mapbox/mapbox-sdk';
 import directionsPlugin from '@mapbox/mapbox-sdk/services/directions';
 
-const MapBox = () => {
+const MapBox = ({ navigate }) => {
   const [map, setMap] = useState(null);
   const [routeLayer, setRouteLayer] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
+
+  mapboxgl.accessToken = 'pk.eyJ1IjoibWFub2hhcnB1bGx1cnUiLCJhIjoiY2xyeHB2cWl0MWFkcjJpbmFuYXkyOTZzaCJ9.AUGHU42YHgAPtHjDzdhZ7g';
+
+  const destination = [78.38598118932651, 17.44030946921754]; // Destination coordinates
 
   useEffect(() => {
-    mapboxgl.accessToken = 'pk.eyJ1IjoibWFub2hhcnB1bGx1cnUiLCJhIjoiY2xyeHB2cWl0MWFkcjJpbmFuYXkyOTZzaCJ9.AUGHU42YHgAPtHjDzdhZ7g';
-
     const initializeMap = ({ setMap, mapContainer }) => {
       const map = new mapboxgl.Map({
         container: mapContainer,
@@ -37,30 +39,20 @@ const MapBox = () => {
       geolocate.on('geolocate', (e) => {
         const userLng = e.coords.longitude;
         const userLat = e.coords.latitude;
+        setUserLocation([userLng, userLat]);
 
         if (!map.getLayer('route')) {
           map.setCenter([userLng, userLat]);
           map.setZoom(14);
         }
 
-        const endPoint = [78.38598118932651, 17.44030946921754];
-        if (routeLayer) {
-          updateRoute(map, [userLng, userLat], endPoint);
-        } else {
-          addRoute(map, [userLng, userLat], endPoint);
+        if (navigate) {
+          if (routeLayer) {
+            updateRoute(map, [userLng, userLat], destination);
+          } else {
+            addRoute(map, [userLng, userLat], destination);
+          }
         }
-      });
-
-      geolocate.on('geolocate', (e) => {
-        const userLng = e.coords.longitude;
-        const userLat = e.coords.latitude;
-
-        const endPoint = [78.38598118932651, 17.44030946921754];
-        updateRoute(map, [userLng, userLat], endPoint);
-      });
-
-      map.on('click', (e) => {
-        console.log('Latitude: ' + e.lngLat.lat + ' Longitude: ' + e.lngLat.lng);
       });
 
       setMap(map);
@@ -74,6 +66,12 @@ const MapBox = () => {
       if (map) map.remove();
     };
   }, [map]);
+
+  useEffect(() => {
+    if (navigate && userLocation && map) {
+      addRoute(map, userLocation, destination);
+    }
+  }, [navigate, userLocation, map]);
 
   const addRoute = (map, start, end) => {
     const directionsClient = directionsPlugin({ accessToken: mapboxgl.accessToken });
