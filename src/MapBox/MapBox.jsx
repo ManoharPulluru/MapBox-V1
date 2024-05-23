@@ -8,6 +8,7 @@ const MapBox = ({ navigate }) => {
   const [map, setMap] = useState(null);
   const [routeLayer, setRouteLayer] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
+  const [prevLocation, setPrevLocation] = useState(null);
 
   mapboxgl.accessToken = 'pk.eyJ1IjoibWFub2hhcnB1bGx1cnUiLCJhIjoiY2xyeHB2cWl0MWFkcjJpbmFuYXkyOTZzaCJ9.AUGHU42YHgAPtHjDzdhZ7g';
 
@@ -39,18 +40,19 @@ const MapBox = ({ navigate }) => {
       geolocate.on('geolocate', (e) => {
         const userLng = e.coords.longitude;
         const userLat = e.coords.latitude;
-        setUserLocation([userLng, userLat]);
+        const newLocation = [userLng, userLat];
+        setUserLocation(newLocation);
 
         if (!map.getLayer('route')) {
-          map.setCenter([userLng, userLat]);
+          map.setCenter(newLocation);
           map.setZoom(14);
         }
 
         if (navigate) {
           if (routeLayer) {
-            updateRoute(map, [userLng, userLat], destination);
+            updateRoute(map, newLocation, destination);
           } else {
-            addRoute(map, [userLng, userLat], destination);
+            addRoute(map, newLocation, destination);
           }
         }
       });
@@ -87,17 +89,22 @@ const MapBox = ({ navigate }) => {
       const updateLocation = (e) => {
         const userLng = e.coords.longitude;
         const userLat = e.coords.latitude;
-        setUserLocation([userLng, userLat]);
+        const newLocation = [userLng, userLat];
 
-        map.flyTo({
-          center: [userLng, userLat],
-          zoom: 18,
-          pitch: 60,
-          bearing: map.getBearing() + 45, // Rotate the map for better visual experience
-          speed: 1.2,
-          curve: 1,
-          essential: true,
-        });
+        if (!prevLocation || (Math.abs(newLocation[0] - prevLocation[0]) > 0.0001 || Math.abs(newLocation[1] - prevLocation[1]) > 0.0001)) {
+          setPrevLocation(newLocation);
+          setUserLocation(newLocation);
+
+          map.flyTo({
+            center: newLocation,
+            zoom: 18,
+            pitch: 60,
+            bearing: map.getBearing() + 45, // Rotate the map for better visual experience
+            speed: 1.2,
+            curve: 1,
+            essential: true,
+          });
+        }
       };
 
       const geolocate = map._controls.find(control => control instanceof mapboxgl.GeolocateControl);
@@ -111,7 +118,7 @@ const MapBox = ({ navigate }) => {
         }
       };
     }
-  }, [map, navigate]);
+  }, [map, navigate, prevLocation]);
 
   const addRoute = (map, start, end) => {
     const directionsClient = directionsPlugin({ accessToken: mapboxgl.accessToken });
