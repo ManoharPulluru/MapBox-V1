@@ -1,13 +1,35 @@
-import React from 'react'
-import './App.css'
-import MapBox from './MapBox/MapBox'
+// App.js
+import React, { useState } from "react";
+import "./App.css";
+import MapBox from "./MapBox/MapBox";
 
 const App = () => {
-  return (
-    <div className='AppMain'>
-      <MapBox/>
-    </div>
-  )
-}
+  const [navigate, setNavigate] = useState(false);
 
-export default App
+  const handleNavigate = () => {
+    setNavigate(true);
+  };
+  return (
+    <div className="AppMain">
+      <MapBox navigate={navigate} />
+
+      {navigate ? (
+        <></>
+      ) : (
+        <>
+          <div className="AppBody">
+            <div className="detailsDiv">
+              <div className="detailsTitle">FIRE-WARNING</div>
+              <div className="detailsBody">Fire Warning at Sample location, spreading fast need immediate attention and action.</div>
+            </div>
+            <div onClick={handleNavigate} className="navigationDiv">
+              Navigate
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default App;

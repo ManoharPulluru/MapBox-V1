@@ -1,0 +1,8 @@
+.IncidentPopUpMain {
+    height: 100%;
+    width: 100%;
+    background-color: yellow;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
