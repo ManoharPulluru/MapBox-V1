@@ -19,7 +19,7 @@ const App = () => {
         <>
           <div className="AppBody">
             <div className="detailsDiv">
-              <div className="detailsTitle">FIRE-WARNING</div>
+              <div className="detailsTitle">FIRE-WARNING!!</div>
               <div className="detailsBody">Fire Warning at Sample location, spreading fast need immediate attention and action.</div>
             </div>
             <div onClick={handleNavigate} className="navigationDiv">

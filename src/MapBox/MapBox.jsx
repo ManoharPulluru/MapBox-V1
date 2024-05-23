@@ -3,13 +3,12 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css';
 import directionsPlugin from '@mapbox/mapbox-sdk/services/directions';
-import Pointer from '../images/Pointer.svg'; // Ensure you have the correct path to your SVG file
+import Pointer from "../images/Pointer.svg";
 
 const MapBox = ({ navigate }) => {
   const [map, setMap] = useState(null);
   const [routeLayer, setRouteLayer] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
-  const [userMarker, setUserMarker] = useState(null);
 
   mapboxgl.accessToken = 'pk.eyJ1IjoibWFub2hhcnB1bGx1cnUiLCJhIjoiY2xyeHB2cWl0MWFkcjJpbmFuYXkyOTZzaCJ9.AUGHU42YHgAPtHjDzdhZ7g';
 
@@ -23,6 +22,7 @@ const MapBox = ({ navigate }) => {
         center: [0, 0],
         zoom: 2,
       });
+
       const geolocate = new mapboxgl.GeolocateControl({
         positionOptions: {
           enableHighAccuracy: true,
@@ -78,28 +78,26 @@ const MapBox = ({ navigate }) => {
         essential: true,
       });
       addRoute(map, userLocation, destination);
-
-      // Add custom marker
-      if (userMarker) {
-        userMarker.remove();
-      }
-      const marker = new mapboxgl.Marker({
-        element: createCustomMarker(),
-      })
-        .setLngLat(userLocation)
-        .addTo(map);
-      setUserMarker(marker);
     }
   }, [navigate, map]);
 
-  const createCustomMarker = () => {
-    const el = document.createElement('div');
-    el.className = 'custom-marker';
-    el.style.backgroundImage = `url(${Pointer})`;
-    el.style.width = '50px';
-    el.style.height = '50px';
-    el.style.backgroundSize = '100%';
-    return el;
+  useEffect(() => {
+    if (window.DeviceOrientationEvent) {
+      window.addEventListener('deviceorientation', handleOrientation, true);
+    }
+
+    return () => {
+      if (window.DeviceOrientationEvent) {
+        window.removeEventListener('deviceorientation', handleOrientation, true);
+      }
+    };
+  }, [map]);
+
+  const handleOrientation = (event) => {
+    if (map && userLocation) {
+      const alpha = event.alpha; // Rotation around z-axis (in degrees)
+      map.rotateTo(alpha, { duration: 200 });
+    }
   };
 
   const addRoute = (map, start, end) => {
@@ -117,44 +115,44 @@ const MapBox = ({ navigate }) => {
         },
       ],
     })
-      .send()
-      .then(response => {
-        const data = response.body;
-        const route = data.routes[0].geometry;
-        if (map.getSource('route')) {
-          map.getSource('route').setData({
-            type: 'Feature',
-            properties: {},
-            geometry: route,
-          });
-        } else {
-          map.addLayer({
-            id: 'route',
-            type: 'line',
-            source: {
-              type: 'geojson',
-              data: {
-                type: 'Feature',
-                properties: {},
-                geometry: route,
-              },
+    .send()
+    .then(response => {
+      const data = response.body;
+      const route = data.routes[0].geometry;
+      if (map.getSource('route')) {
+        map.getSource('route').setData({
+          type: 'Feature',
+          properties: {},
+          geometry: route,
+        });
+      } else {
+        map.addLayer({
+          id: 'route',
+          type: 'line',
+          source: {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              properties: {},
+              geometry: route,
             },
-            layout: {
-              'line-join': 'round',
-              'line-cap': 'round',
-            },
-            paint: {
-              'line-color': '#3887be',
-              'line-width': 5,
-              'line-opacity': 0.75,
-            },
-          });
-        }
-        setRouteLayer(true);
-      })
-      .catch(error => {
-        console.error('Error fetching directions:', error);
-      });
+          },
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round',
+          },
+          paint: {
+            'line-color': '#3887be',
+            'line-width': 5,
+            'line-opacity': 0.75,
+          },
+        });
+      }
+      setRouteLayer(true);
+    })
+    .catch(error => {
+      console.error('Error fetching directions:', error);
+    });
   };
 
   const updateRoute = (map, start, end) => {
@@ -172,23 +170,23 @@ const MapBox = ({ navigate }) => {
         },
       ],
     })
-      .send()
-      .then(response => {
-        const data = response.body;
-        const route = data.routes[0].geometry;
-        if (map.getSource('route')) {
-          map.getSource('route').setData({
-            type: 'Feature',
-            properties: {},
-            geometry: route,
-          });
-        } else {
-          addRoute(map, start, end);
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching directions:', error);
-      });
+    .send()
+    .then(response => {
+      const data = response.body;
+      const route = data.routes[0].geometry;
+      if (map.getSource('route')) {
+        map.getSource('route').setData({
+          type: 'Feature',
+          properties: {},
+          geometry: route,
+        });
+      } else {
+        addRoute(map, start, end);
+      }
+    })
+    .catch(error => {
+      console.error('Error fetching directions:', error);
+    });
   };
 
   return <div id="map" style={{ position: 'absolute', top: 0, bottom: 0, width: '100%' }} />;
