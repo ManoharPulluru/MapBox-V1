@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import "./App.css";
 import MapBox from "./MapBox/MapBox";
+import MapBoxV1 from "./MapBox/MapBoxV1";
 
 const App = () => {
   const [navigate, setNavigate] = useState(false);
@@ -11,7 +12,8 @@ const App = () => {
   };
   return (
     <div className="AppMain">
-      <MapBox navigate={navigate} />
+      {/* <MapBox navigate={navigate} /> */}
+      <MapBoxV1/>
 
       {navigate ? (
         <></>

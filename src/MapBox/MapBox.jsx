@@ -3,12 +3,13 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css';
 import directionsPlugin from '@mapbox/mapbox-sdk/services/directions';
-import Pointer from "../images/Pointer.png";
+import Pointer from "../images/Pointer.svg";
 
 const MapBox = ({ navigate }) => {
   const [map, setMap] = useState(null);
   const [routeLayer, setRouteLayer] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
+  const [geolocateTriggered, setGeolocateTriggered] = useState(false);
 
   mapboxgl.accessToken = 'pk.eyJ1IjoibWFub2hhcnB1bGx1cnUiLCJhIjoiY2xyeHB2cWl0MWFkcjJpbmFuYXkyOTZzaCJ9.AUGHU42YHgAPtHjDzdhZ7g';
 
@@ -38,7 +39,10 @@ const MapBox = ({ navigate }) => {
         .addTo(map);
 
       map.on('load', () => {
-        geolocate.trigger();
+        if (!geolocateTriggered) {
+          geolocate.trigger();
+          setGeolocateTriggered(true);
+        }
       });
 
       geolocate.on('geolocate', (e) => {
@@ -73,11 +77,15 @@ const MapBox = ({ navigate }) => {
     return () => {
       if (map) map.remove();
     };
-  }, [map]);
+  }, [map, geolocateTriggered]);
 
   useEffect(() => {
     if (navigate && userLocation && map) {
-      // Adding route after fitting bounds if navigate is true
+      // Center the map to the user's location when navigate is true
+      map.setCenter(userLocation);
+      map.setZoom(14);
+
+      // Adding route after centering if navigate is true
       addRoute(map, userLocation, destination);
     }
   }, [navigate, map, userLocation]);
