@@ -33,6 +33,10 @@ const MapBox = ({ navigate }) => {
 
       map.addControl(geolocate);
 
+      const destinationMarker = new mapboxgl.Marker({ element: createMarkerElement() })
+        .setLngLat(destination)
+        .addTo(map);
+
       map.on('load', () => {
         geolocate.trigger();
       });
@@ -42,10 +46,13 @@ const MapBox = ({ navigate }) => {
         const userLat = e.coords.latitude;
         setUserLocation([userLng, userLat]);
 
-        if (!map.getLayer('route')) {
-          map.setCenter([userLng, userLat]);
-          map.setZoom(14);
-        }
+        // Fit bounds to include both user location and destination
+        const bounds = new mapboxgl.LngLatBounds();
+        bounds.extend([userLng, userLat]);
+        bounds.extend(destination);
+        map.fitBounds(bounds, {
+          padding: 150,
+        });
 
         if (navigate) {
           if (routeLayer) {
@@ -70,34 +77,19 @@ const MapBox = ({ navigate }) => {
 
   useEffect(() => {
     if (navigate && userLocation && map) {
-      map.flyTo({
-        center: userLocation,
-        zoom: 18,
-        pitch: 60,
-        bearing: 0,
-        essential: true,
-      });
+      // Adding route after fitting bounds if navigate is true
       addRoute(map, userLocation, destination);
     }
-  }, [navigate, map]);
+  }, [navigate, map, userLocation]);
 
-  useEffect(() => {
-    if (window.DeviceOrientationEvent) {
-      window.addEventListener('deviceorientation', handleOrientation, true);
-    }
-
-    return () => {
-      if (window.DeviceOrientationEvent) {
-        window.removeEventListener('deviceorientation', handleOrientation, true);
-      }
-    };
-  }, [map]);
-
-  const handleOrientation = (event) => {
-    if (map && userLocation) {
-      const alpha = event.alpha; // Rotation around z-axis (in degrees)
-      map.rotateTo(alpha, { duration: 200 });
-    }
+  const createMarkerElement = () => {
+    const el = document.createElement('div');
+    el.className = 'marker';
+    el.style.backgroundImage = `url(${Pointer})`;
+    el.style.width = '30px';
+    el.style.height = '30px';
+    el.style.backgroundSize = '100%';
+    return el;
   };
 
   const addRoute = (map, start, end) => {
@@ -142,9 +134,9 @@ const MapBox = ({ navigate }) => {
             'line-cap': 'round',
           },
           paint: {
-            'line-color': '#3887be',
+            'line-color': '#0000FF',
             'line-width': 5,
-            'line-opacity': 0.75,
+            'line-opacity': 1,
           },
         });
       }
