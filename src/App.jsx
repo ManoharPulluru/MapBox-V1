@@ -13,7 +13,9 @@ const App = () => {
   return (
     <div className="AppMain">
       {/* <MapBox navigate={navigate} /> */}
-      <MapBoxV1/>
+      <MapBoxV1
+      navigate={navigate}
+      />
 
       {navigate ? (
         <></>

@@ -5,11 +5,12 @@ mapboxgl.accessToken = "pk.eyJ1IjoibWFub2hhcnB1bGx1cnUiLCJhIjoiY2xyeHB2cWl0MWFkc
 
 const destination = [78.38598118932651, 17.44030946921754]; // Destination coordinates
 
-const MapBoxV1 = () => {
+const MapBoxV1 = ({navigate}) => {
   const mapContainerRef = useRef(null);
-  const [navigate, setNavigate] = useState(false);
+  // const [navigate, setNavigate] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [map, setMap] = useState(null);
+  const [initialCenterSet, setInitialCenterSet] = useState(false); // Track if initial center is set
 
   useEffect(() => {
     const mapInstance = new mapboxgl.Map({
@@ -25,6 +26,7 @@ const MapBoxV1 = () => {
       },
       trackUserLocation: true,
       showUserHeading: true,
+      fitBoundsOptions: { maxZoom: 14 } // Prevents the geolocate control from automatically re-centering the map
     });
 
     mapInstance.addControl(geolocate);
@@ -33,9 +35,10 @@ const MapBoxV1 = () => {
       geolocate.on('geolocate', (position) => {
         const { longitude, latitude } = position.coords;
         setUserLocation([longitude, latitude]);
-        if (!userLocation) {
+        if (!initialCenterSet) {
           mapInstance.setCenter([longitude, latitude]);
           mapInstance.setZoom(14);
+          setInitialCenterSet(true); // Mark initial center as set
         }
       });
       geolocate.trigger();
@@ -44,7 +47,7 @@ const MapBoxV1 = () => {
     setMap(mapInstance);
 
     return () => mapInstance.remove();
-  }, []);
+  }, [initialCenterSet]);
 
   useEffect(() => {
     if (navigate && userLocation) {
@@ -95,7 +98,6 @@ const MapBoxV1 = () => {
   return (
     <div>
       <div style={{ height: "100vh", width: "100vw" }} ref={mapContainerRef}></div>
-      <button style={{ position: "absolute", right: 0, top: 0 }} onClick={() => setNavigate(true)}>Start Navigation</button>
     </div>
   );
 };
