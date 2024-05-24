@@ -3,7 +3,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css';
 import directionsPlugin from '@mapbox/mapbox-sdk/services/directions';
-import Pointer from "../images/Pointer.svg";
+import Pointer from "../images/Pointer.png";
 
 const MapBox = ({ navigate }) => {
   const [map, setMap] = useState(null);
