@@ -1,23 +1,25 @@
 import mapboxgl from "mapbox-gl";
 import React, { useEffect, useRef, useState } from "react";
+import Pointer from "../images/Pointer.png";
 
 mapboxgl.accessToken = "pk.eyJ1IjoibWFub2hhcnB1bGx1cnUiLCJhIjoiY2xyeHB2cWl0MWFkcjJpbmFuYXkyOTZzaCJ9.AUGHU42YHgAPtHjDzdhZ7g";
 
 const destination = [78.38598118932651, 17.44030946921754]; // Destination coordinates
 
-const MapBoxV1 = ({navigate}) => {
+const MapBoxV1 = ({ navigate, isCentered }) => {
   const mapContainerRef = useRef(null);
-  // const [navigate, setNavigate] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [map, setMap] = useState(null);
-  const [initialCenterSet, setInitialCenterSet] = useState(false); // Track if initial center is set
+  const [initialCenterSet, setInitialCenterSet] = useState(false);
+  const [latestCenter, setLatestCenter] = useState([0, 0]);
+  const [latestZoom, setLatestZoom] = useState(0);
 
   useEffect(() => {
     const mapInstance = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/streets-v12",
-      center: [78.361771, 17.441989], // Set a reasonable initial center
-      zoom: 14, // Set a reasonable initial zoom
+      center: [0, 0],
+      zoom: 0,
     });
 
     const geolocate = new mapboxgl.GeolocateControl({
@@ -26,7 +28,7 @@ const MapBoxV1 = ({navigate}) => {
       },
       trackUserLocation: true,
       showUserHeading: true,
-      fitBoundsOptions: { maxZoom: 14 } // Prevents the geolocate control from automatically re-centering the map
+      fitBoundsOptions: { maxZoom: 14 }
     });
 
     mapInstance.addControl(geolocate);
@@ -38,10 +40,27 @@ const MapBoxV1 = ({navigate}) => {
         if (!initialCenterSet) {
           mapInstance.setCenter([longitude, latitude]);
           mapInstance.setZoom(14);
-          setInitialCenterSet(true); // Mark initial center as set
+          setInitialCenterSet(true);
         }
       });
       geolocate.trigger();
+
+      // Add custom marker at the destination
+      const el = document.createElement('div');
+      el.className = 'marker';
+      el.style.backgroundImage = `url(${Pointer})`;
+      el.style.width = '32px';
+      el.style.height = '32px';
+      el.style.backgroundSize = '100%';
+
+      new mapboxgl.Marker(el)
+        .setLngLat(destination)
+        .addTo(mapInstance);
+    });
+
+    mapInstance.on('move', () => {
+      setLatestCenter(mapInstance.getCenter().toArray());
+      setLatestZoom(mapInstance.getZoom());
     });
 
     setMap(mapInstance);
@@ -54,6 +73,16 @@ const MapBoxV1 = ({navigate}) => {
       getRoute(userLocation);
     }
   }, [navigate, userLocation]);
+
+  useEffect(() => {
+    if (isCentered && map) {
+      map.flyTo({
+        center: userLocation,
+        zoom: 14,
+        essential: true, // This animation is considered essential with respect to prefers-reduced-motion
+      });
+    }
+  }, [isCentered]);
 
   const getRoute = (start) => {
     const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${destination[0]},${destination[1]}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`;

@@ -52,12 +52,19 @@ const MapBox = ({ navigate }) => {
 
         // Fit bounds to include both user location and destination
         const bounds = new mapboxgl.LngLatBounds();
-        bounds.extend([userLng, userLat]);
+        bounds.extend([longitude, latitude]);
         bounds.extend(destination);
-        map.fitBounds(bounds, {
-          padding: 150,
-        });
-
+        if(window.width < 600) {
+          mapInstance.fitBounds(bounds, {
+            padding: 50
+          });
+          
+        } else {
+          mapInstance.fitBounds(bounds, {
+            padding: 150
+          });
+  
+        }
         if (navigate) {
           if (routeLayer) {
             updateRoute(map, [userLng, userLat], destination);
@@ -66,10 +73,8 @@ const MapBox = ({ navigate }) => {
           }
         }
       });
-
       setMap(map);
     };
-
     if (!map) {
       initializeMap({ setMap, mapContainer: 'map' });
     }

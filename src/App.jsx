@@ -6,17 +6,30 @@ import MapBoxV1 from "./MapBox/MapBoxV1";
 
 const App = () => {
   const [navigate, setNavigate] = useState(false);
+  const [isCentered, setIsCentered] = useState(false);
 
   const handleNavigate = () => {
     setNavigate(true);
   };
+  const handleReCenter = () => {
+    setIsCentered(true);
+    setTimeout(() => {
+      setIsCentered(false);
+    }, 100); // No need for brackets around 1000
+  };
+  
   return (
     <div className="AppMain">
       {/* <MapBox navigate={navigate} /> */}
       <MapBoxV1
+      isCentered={isCentered}
       navigate={navigate}
       />
-
+      <>
+      <div className="reCenterButton">
+        <button onClick={handleReCenter}>Re-Center</button>
+      </div>
+      </>
       {navigate ? (
         <></>
       ) : (
