@@ -37,12 +37,19 @@ const MapBoxV1 = ({ navigate, isCentered, setIsRouteFormed, alignToDirection }) 
 
     mapInstance.on('load', () => {
       geolocate.on('geolocate', (position) => {
-        const { longitude, latitude } = position.coords;
+        const { longitude, latitude, heading } = position.coords;
         setUserLocation([longitude, latitude]);
         if (!initialCenterSet) {
           mapInstance.setCenter([longitude, latitude]);
           mapInstance.setZoom(14);
           setInitialCenterSet(true);
+        }
+        if (alignToDirection) {
+          mapInstance.easeTo({
+            bearing: heading,
+            duration: 1000, // Duration in milliseconds
+            easing: (t) => t, // Linear easing
+          });
         }
       });
       geolocate.trigger();
@@ -82,34 +89,9 @@ const MapBoxV1 = ({ navigate, isCentered, setIsRouteFormed, alignToDirection }) 
         center: userLocation,
         zoom: 14,
         essential: true, // This animation is considered essential with respect to prefers-reduced-motion
-        bearing: getBearing(userLocation, destination), // Set bearing based on direction
-        duration: 2000, // Animation duration in milliseconds
-        easing: (t) => t, // Linear easing
       });
     }
   }, [isCentered]);
-
-  useEffect(() => {
-    if (alignToDirection && map && userLocation) {
-      map.easeTo({
-        bearing: getBearing(userLocation, destination),
-        duration: 2000,
-        easing: (t) => t,
-      });
-    }
-  }, [alignToDirection, userLocation]);
-
-  const getBearing = (start, end) => {
-    const startLng = start[0];
-    const startLat = start[1];
-    const endLng = end[0];
-    const endLat = end[1];
-
-    const radians = Math.atan2(endLng - startLng, endLat - startLat);
-    const bearing = radians * (180 / Math.PI);
-
-    return bearing;
-  };
 
   const getRoute = (start) => {
     const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${destination[0]},${destination[1]}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`;
