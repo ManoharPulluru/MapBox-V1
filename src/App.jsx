@@ -7,6 +7,7 @@ import MapBoxV1 from "./MapBox/MapBoxV1";
 const App = () => {
   const [navigate, setNavigate] = useState(false);
   const [isCentered, setIsCentered] = useState(false);
+  const [isRouteFormed, setIsRouteFormed] = useState(false)
 
   const handleNavigate = () => {
     setNavigate(true);
@@ -23,6 +24,7 @@ const App = () => {
       {/* <MapBox navigate={navigate} /> */}
       <MapBoxV1
       isCentered={isCentered}
+      setIsRouteFormed={setIsRouteFormed}
       navigate={navigate}
       />
       <>
@@ -30,7 +32,7 @@ const App = () => {
         <button onClick={handleReCenter}>Re-Center</button>
       </div>
       </>
-      {navigate ? (
+      {navigate && isRouteFormed ? (
         <></>
       ) : (
         <>
@@ -40,7 +42,10 @@ const App = () => {
               <div className="detailsBody">Fire Warning at Sample location, spreading fast need immediate attention and action.</div>
             </div>
             <div onClick={handleNavigate} className="navigationDiv">
-              Navigate
+              {/* Navigate */}
+              {
+                (!isRouteFormed && navigate) ? "..." : "Navigate"
+              }
             </div>
           </div>
         </>

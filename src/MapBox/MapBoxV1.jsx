@@ -6,7 +6,9 @@ mapboxgl.accessToken = "pk.eyJ1IjoibWFub2hhcnB1bGx1cnUiLCJhIjoiY2xyeHB2cWl0MWFkc
 
 const destination = [78.38598118932651, 17.44030946921754]; // Destination coordinates
 
-const MapBoxV1 = ({ navigate, isCentered }) => {
+const MapBoxV1 = ({ navigate, isCentered, setIsRouteFormed }) => {
+
+  // const [isRouteFormed, setIsRouteFormed] = useState(false)
   const mapContainerRef = useRef(null);
   const [userLocation, setUserLocation] = useState(null);
   const [map, setMap] = useState(null);
@@ -121,6 +123,13 @@ const MapBoxV1 = ({ navigate, isCentered }) => {
             }
           });
         }
+
+        setIsRouteFormed(true);
+        console.log("Route formed successfully!");
+      })
+      .catch(error => {
+        console.error("Error forming route:", error);
+        alert("There was an issue forming the route. Please check your internet connection.");
       });
   };
 
