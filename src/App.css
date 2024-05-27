@@ -78,3 +78,7 @@
   right: 10px;
   bottom: 40px;
 }
+
+.navigationDiv svg {
+  height: 100%;
+}
