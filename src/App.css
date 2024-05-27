@@ -82,3 +82,12 @@
 .navigationDiv svg {
   height: 100%;
 }
+
+.alignToDirectionButton {
+  height: fit-content;
+  padding: 10px 20px;
+  position: absolute;
+  right: 10px;
+  bottom: 80px;
+}
+

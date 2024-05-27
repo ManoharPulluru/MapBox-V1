@@ -8,6 +8,7 @@ const App = () => {
   const [navigate, setNavigate] = useState(false);
   const [isCentered, setIsCentered] = useState(false);
   const [isRouteFormed, setIsRouteFormed] = useState(false);
+  const [alignToDirection, setAlignToDirection] = useState(false);
 
   const handleNavigate = () => {
     setNavigate(true);
@@ -19,13 +20,23 @@ const App = () => {
     }, 100); // No need for brackets around 1000
   };
 
+  const handleDirection = () => {
+    setAlignToDirection(true);
+    setTimeout(() => {
+      setAlignToDirection(false);
+    }, 100); // No need for brackets around 1000
+  }
+
   return (
     <div className="AppMain">
       {/* <MapBox navigate={navigate} /> */}
-      <MapBoxV1 isCentered={isCentered} setIsRouteFormed={setIsRouteFormed} navigate={navigate} />
+      <MapBoxV1 alignToDirection={alignToDirection} isCentered={isCentered} setIsRouteFormed={setIsRouteFormed} navigate={navigate} />
       <>
         <div className="reCenterButton">
           <button onClick={handleReCenter}>Re-Center</button>
+        </div>
+        <div className="alignToDirectionButton">
+          <button onClick={handleDirection}>Align to Direction</button>  
         </div>
       </>
       {navigate && isRouteFormed ? (
@@ -40,7 +51,6 @@ const App = () => {
             <div onClick={handleNavigate} className="navigationDiv">
               {/* Navigate */}
               {!isRouteFormed && navigate ? (
-                
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
                   <circle fill="#FFFFFF" stroke="#FFFFFF" stroke-width="15" r="15" cx="40" cy="65">
                     <animate attributeName="cy" calcMode="spline" dur="2" values="65;135;65;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.4"></animate>
