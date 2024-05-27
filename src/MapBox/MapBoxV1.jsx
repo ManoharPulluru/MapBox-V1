@@ -8,9 +8,9 @@ const destination = [78.38598118932651, 17.44030946921754]; // Destination coord
 
 const MapBoxV1 = ({ navigate, isCentered, setIsRouteFormed, alignToDirection }) => {
 
-  // const [isRouteFormed, setIsRouteFormed] = useState(false)
   const mapContainerRef = useRef(null);
   const [userLocation, setUserLocation] = useState(null);
+  const [userHeading, setUserHeading] = useState(null);
   const [map, setMap] = useState(null);
   const [initialCenterSet, setInitialCenterSet] = useState(false);
   const [latestCenter, setLatestCenter] = useState([0, 0]);
@@ -37,8 +37,9 @@ const MapBoxV1 = ({ navigate, isCentered, setIsRouteFormed, alignToDirection }) 
 
     mapInstance.on('load', () => {
       geolocate.on('geolocate', (position) => {
-        const { longitude, latitude } = position.coords;
+        const { longitude, latitude, heading } = position.coords;
         setUserLocation([longitude, latitude]);
+        setUserHeading(heading);
         if (!initialCenterSet) {
           mapInstance.setCenter([longitude, latitude]);
           mapInstance.setZoom(14);
@@ -81,35 +82,23 @@ const MapBoxV1 = ({ navigate, isCentered, setIsRouteFormed, alignToDirection }) 
       map.flyTo({
         center: userLocation,
         zoom: 14,
-        essential: true, // This animation is considered essential with respect to prefers-reduced-motion
-        bearing: getBearing(userLocation, destination), // Set bearing based on direction
-        duration: 2000, // Animation duration in milliseconds
-        easing: (t) => t, // Linear easing
-      });
-    }
-  }, [isCentered]);
-
-  useEffect(() => {
-    if (alignToDirection && map && userLocation) {
-      map.easeTo({
-        bearing: getBearing(userLocation, destination),
+        essential: true,
+        bearing: userHeading || 0, // Set bearing based on user heading
         duration: 2000,
         easing: (t) => t,
       });
     }
-  }, [alignToDirection, userLocation]);
+  }, [isCentered, userHeading]);
 
-  const getBearing = (start, end) => {
-    const startLng = start[0];
-    const startLat = start[1];
-    const endLng = end[0];
-    const endLat = end[1];
-
-    const radians = Math.atan2(endLng - startLng, endLat - startLat);
-    const bearing = radians * (180 / Math.PI);
-
-    return bearing;
-  };
+  useEffect(() => {
+    if (alignToDirection && map && userLocation) {
+      map.easeTo({
+        bearing: userHeading || 0, // Use user heading
+        duration: 2000,
+        easing: (t) => t,
+      });
+    }
+  }, [alignToDirection, userHeading]);
 
   const getRoute = (start) => {
     const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${destination[0]},${destination[1]}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`;
