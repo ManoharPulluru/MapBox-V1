@@ -9,6 +9,8 @@ const App = () => {
   const [isCentered, setIsCentered] = useState(false);
   const [isRouteFormed, setIsRouteFormed] = useState(false);
   const [alignToDirection, setAlignToDirection] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+
 
   const handleNavigate = () => {
     setNavigate(true);
@@ -27,13 +29,19 @@ const App = () => {
     }, 100); // No need for brackets around 1000
   }
 
+  console.log(userLocation, 989)
+
   return (
     <div className="AppMain">
       {/* <MapBox navigate={navigate} /> */}
-      <MapBoxV1 alignToDirection={alignToDirection} isCentered={isCentered} setIsRouteFormed={setIsRouteFormed} navigate={navigate} />
+      <MapBoxV1 userLocation={userLocation} setUserLocation={setUserLocation} alignToDirection={alignToDirection} isCentered={isCentered} setIsRouteFormed={setIsRouteFormed} navigate={navigate} />
       <>
         <div className="reCenterButton">
           <button onClick={handleReCenter}>Re-Center</button>
+        </div>
+        <div className="userLatLngDetails">
+          <div>Lat:{userLocation? userLocation[1] : "fetching..."}</div>
+          <div>Lng:{userLocation? userLocation[0]: ""}</div>
         </div>
         <div className="alignToDirectionButton">
           <button onClick={handleDirection}>Align to Direction</button>  

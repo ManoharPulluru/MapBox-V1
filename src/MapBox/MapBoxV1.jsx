@@ -7,9 +7,9 @@ mapboxgl.accessToken = "pk.eyJ1IjoibWFub2hhcnB1bGx1cnUiLCJhIjoiY2xyeHB2cWl0MWFkc
 
 const destination = [78.38598118932651, 17.44030946921754]; // Destination coordinates
 
-const MapBoxV1 = ({ navigate, isCentered, setIsRouteFormed, alignToDirection }) => {
+const MapBoxV1 = ({ navigate, isCentered, setIsRouteFormed, alignToDirection, userLocation, setUserLocation }) => {
   const mapContainerRef = useRef(null);
-  const [userLocation, setUserLocation] = useState(null);
+  const [userLatLng, setUserLatLng] = useState(null); // New state to store lat and lng
   const [userHeading, setUserHeading] = useState(null);
   const [map, setMap] = useState(null);
   const [initialCenterSet, setInitialCenterSet] = useState(false);
@@ -42,6 +42,8 @@ const MapBoxV1 = ({ navigate, isCentered, setIsRouteFormed, alignToDirection }) 
       geolocate.on('geolocate', (position) => {
         const { longitude, latitude, heading } = position.coords;
         setUserLocation([longitude, latitude]);
+        setUserLatLng({ latitude, longitude }); // Set the lat and lng state
+        console.log(`User's Latitude: ${latitude}, Longitude: ${longitude}`); // Print lat and lng to console
         setUserHeading(heading);
         if (!initialCenterSet) {
           mapInstance.setCenter([longitude, latitude]);

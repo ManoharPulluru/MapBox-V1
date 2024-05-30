@@ -95,3 +95,14 @@
   bottom: 80px;
 }
 
+
+
+.userLatLngDetails {
+  height: 40px;
+  width: fit-content;
+  background-color: rgb(50, 87, 199);
+  color: white;
+  position: absolute;
+  top: 50%;
+  right: 0;
+}
